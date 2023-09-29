@@ -19,6 +19,52 @@ path = None
 log = None
 conn = None
 cursor = None
+argument = None
+
+async def respnse_connect():
+    global log
+    global argument
+    log = open("../log.txt", 'a', encoding='utf-8')
+    argument = "connect"
+    saves = [element for element in os.listdir("../") if ".sav" in element]
+    if "player.sav" in saves:
+        saves.remove("player.sav")
+    saves.insert(0, "Connected Succesfully")
+    data_saves = json.dumps(saves)
+    await send_message_to_client(data_saves)
+
+async def response_saveSelected(type, message):
+    global argument
+    global path
+    global conn
+    global cursor
+    save = message["save"]
+    argument = type + " " + save
+    path = "../" + save
+    process_unpack(path, "../result")
+    conn = sqlite3.connect("../result/main.db")
+    cursor = conn.cursor()
+    drivers = fetch_info()
+    drivers.insert(0, "Save Loaded Succesfully")
+    data_json_drivers = json.dumps(drivers)
+    await send_message_to_client(data_json_drivers)
+    staff = fetch_staff()
+    staff.insert(0, "Staff Fetched")
+    data_json_staff = json.dumps(staff)
+    await send_message_to_client(data_json_staff)
+    engines = fetch_engines()
+    engines.insert(0, "Engines fetched")
+    data_json_engines = json.dumps(engines)
+    await send_message_to_client(data_json_engines)
+    allowCalendar = [tuple(check_claendar())]
+    allowCalendar.insert(0, "Calendar fetched")
+    data_json_calendar = json.dumps(allowCalendar)
+    await send_message_to_client(data_json_calendar)
+    create_backup(path, save)
+    year =  cursor.execute("SELECT CurrentSeason FROM Player_State").fetchone()[0]
+    year = ["Year fetched", year]
+    data_json_year = json.dumps(year)
+    await send_message_to_client(data_json_year)
 
 
 async def handle_command(message):
@@ -27,49 +73,14 @@ async def handle_command(message):
     global conn
     global cursor
     global log
+    global argument
     argument = ""
     if type == "connect":
-        #print("Connect recibido")
-        log = open("../log.txt", 'a', encoding='utf-8')
-        argument = type
-        saves = [element for element in os.listdir("../") if ".sav" in element]
-        if "player.sav" in saves:
-            saves.remove("player.sav")
-        saves.insert(0, "Connected Succesfully")
-        data_saves = json.dumps(saves)
-        await send_message_to_client(data_saves)
+        await respnse_connect()
 
     elif type == "saveSelected":
-        save = message["save"]
-        argument = type + " " + save
-        path = "../" + save
-        process_unpack(path, "../result")
-        conn = sqlite3.connect("../result/main.db")
-        cursor = conn.cursor()
-        drivers = fetch_info()
-        drivers.insert(0, "Save Loaded Succesfully")
-        data_json_drivers = json.dumps(drivers)
-        await send_message_to_client(data_json_drivers)
-        staff = fetch_staff()
-        staff.insert(0, "Staff Fetched")
-        data_json_staff = json.dumps(staff)
-        await send_message_to_client(data_json_staff)
-        engines = fetch_engines()
-        engines.insert(0, "Engines fetched")
-        data_json_engines = json.dumps(engines)
-        await send_message_to_client(data_json_engines)
-        allowCalendar = [tuple(check_claendar())]
-        allowCalendar.insert(0, "Calendar fetched")
-        data_json_calendar = json.dumps(allowCalendar)
-        await send_message_to_client(data_json_calendar)
-        create_backup(path, save)
-        year =  cursor.execute("SELECT CurrentSeason FROM Player_State").fetchone()[0]
-        year = ["Year fetched", year]
-        data_json_year = json.dumps(year)
-        await send_message_to_client(data_json_year)
-
-
-
+        await response_saveSelected(type, message)
+        
     elif type =="hire":
         argument = "hire " + message["driverID"] + " " + str(message["teamID"]) + " " + message["position"] + " " + message["salary"] + " " + message["signBonus"] + " " + message["raceBonus"] + " " + message["raceBonusPos"] + " " + message["year"]
         run_trasnsfer(argument)
