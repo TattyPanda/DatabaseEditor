@@ -66,6 +66,56 @@ async def response_saveSelected(type, message):
     data_json_year = json.dumps(year)
     await send_message_to_client(data_json_year)
 
+async def response_hire(type, message):
+    global argument
+    argument = "hire " + message["driverID"] + " " + str(message["teamID"]) + " " + message["position"] + " " + message["salary"] + " " + message["signBonus"] + " " + message["raceBonus"] + " " + message["raceBonusPos"] + " " + message["year"]
+    run_trasnsfer(argument)
+    process_repack("../result", path)
+    info = []
+    info.insert(0, "Succesfully moved " + message["driver"] + " into " + message["team"])
+    info_json = json.dumps(info)
+    await send_message_to_client(info_json)
+
+async def response_fire(type, message):
+    global argument
+    argument = "fire " + message["driverID"]
+    run_trasnsfer(argument)
+    process_repack("../result", path)
+    info = []
+    info.insert(0, "Succesfully released " + message["driver"] + " from " + message["team"])
+    info_json = json.dumps(info)
+    await send_message_to_client(info_json)
+
+async def response_autocontract(type, message):
+    global argument
+    argument = "hire " + message["driverID"] + " " +  str(message["teamID"]) + " " + message["position"]
+    run_trasnsfer(argument)
+    process_repack("../result", path)
+    info = []
+    info.insert(0, "Succesfully moved " + message["driver"] + " into " + message["team"])
+    info_json = json.dumps(info)
+    await send_message_to_client(info_json)
+
+async def response_swap(type, message):
+    global argument
+    argument = "swap " + message["driver1ID"] + " " + message["driver2ID"]
+    run_trasnsfer(argument)
+    process_repack("../result", path)
+    info = []
+    info.insert(0, "Succesfully swapped " + message["driver1"] + " and  " + message["driver2"])
+    info_json = json.dumps(info)
+    await send_message_to_client(info_json)
+
+async def response_editStats(type, message):
+    global argument
+    run_editStats(message["driverID"] + " " + message["typeStaff"] + " " + message["statsArray"])
+    argument = type + " " + message["driverID"] + " " + message["typeStaff"] + " " + message["statsArray"]
+    process_repack("../result", path)
+    info = []
+    info.insert(0, "Succesfully edited " + message["driver"] + "'s stats")
+    info_json = json.dumps(info)
+    await send_message_to_client(info_json)
+
 
 async def handle_command(message):
     type = message["command"]
@@ -80,51 +130,21 @@ async def handle_command(message):
 
     elif type == "saveSelected":
         await response_saveSelected(type, message)
-        
+
     elif type =="hire":
-        argument = "hire " + message["driverID"] + " " + str(message["teamID"]) + " " + message["position"] + " " + message["salary"] + " " + message["signBonus"] + " " + message["raceBonus"] + " " + message["raceBonusPos"] + " " + message["year"]
-        run_trasnsfer(argument)
-        process_repack("../result", path)
-        info = []
-        info.insert(0, "Succesfully moved " + message["driver"] + " into " + message["team"])
-        info_json = json.dumps(info)
-        await send_message_to_client(info_json)
+        await response_hire(type, message)
 
     elif type =="fire":
-        argument = "fire " + message["driverID"]
-        run_trasnsfer(argument)
-        process_repack("../result", path)
-        info = []
-        info.insert(0, "Succesfully released " + message["driver"] + " from " + message["team"])
-        info_json = json.dumps(info)
-        await send_message_to_client(info_json)
+        await response_fire(type, message)
 
     elif type =="autocontract":
-        argument = "hire " + message["driverID"] + " " +  str(message["teamID"]) + " " + message["position"]
-        run_trasnsfer(argument)
-        process_repack("../result", path)
-        info = []
-        info.insert(0, "Succesfully moved " + message["driver"] + " into " + message["team"])
-        info_json = json.dumps(info)
-        await send_message_to_client(info_json)
+        await response_autocontract(type, message)
 
     elif type=="swap":
-        argument = "swap " + message["driver1ID"] + " " + message["driver2ID"]
-        run_trasnsfer(argument)
-        process_repack("../result", path)
-        info = []
-        info.insert(0, "Succesfully swapped " + message["driver1"] + " and  " + message["driver2"])
-        info_json = json.dumps(info)
-        await send_message_to_client(info_json)
+        await response_swap(type, message)
 
     elif type =="editStats":
-        run_editStats(message["driverID"] + " " + message["typeStaff"] + " " + message["statsArray"])
-        argument = type + " " + message["driverID"] + " " + message["typeStaff"] + " " + message["statsArray"]
-        process_repack("../result", path)
-        info = []
-        info.insert(0, "Succesfully edited " + message["driver"] + "'s stats")
-        info_json = json.dumps(info)
-        await send_message_to_client(info_json)
+        await response_editStats(type, message)
 
     elif type=="calendar":
         run_editCalendar(message["calendarCodes"])
